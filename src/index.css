@@ -1,1 +1,41 @@
 @import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #080810;
+    font-family: 'Courier New', Courier, monospace;
+  }
+}
+
+@layer utilities {
+  .neon-green-text {
+    color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.6), 0 0 25px rgba(0, 255, 136, 0.25);
+  }
+
+  .hp-bar-green {
+    background: linear-gradient(90deg, #00cc55, #00ff88);
+    box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+  }
+
+  .hp-bar-yellow {
+    background: linear-gradient(90deg, #cc8800, #ffcc00);
+    box-shadow: 0 0 12px rgba(255, 204, 0, 0.5);
+  }
+
+  .hp-bar-red {
+    background: linear-gradient(90deg, #aa0022, #ff3366);
+    box-shadow: 0 0 12px rgba(255, 51, 102, 0.5);
+  }
+
+  .hp-bar-danger {
+    background: linear-gradient(90deg, #880011, #ff3366);
+    box-shadow: 0 0 12px rgba(255, 51, 102, 0.7);
+    animation: pulse-danger 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
