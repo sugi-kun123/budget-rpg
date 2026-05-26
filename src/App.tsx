@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useBudget } from './hooks/useBudget';
 import SettingsPanel from './components/SettingsPanel';
+import MonsterDisplay from './components/MonsterDisplay';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
 
@@ -30,6 +31,12 @@ function App() {
 
   const isOverBudget = todayRemaining < 0;
   const isLastDay = currentDay >= totalDays;
+  const baseDailyBudget = totalBudget / totalDays;
+  const growthRate = isLastDay
+    ? 0
+    : ((tomorrowBudget - baseDailyBudget) / baseDailyBudget) * 100;
+  const finalSavings = totalBudget - totalSpentNow;
+
   const hpPercent = todayBudget > 0
     ? Math.max(0, Math.min(100, (todayRemaining / todayBudget) * 100))
     : 0;
@@ -81,6 +88,13 @@ function App() {
             </button>
           </div>
         </header>
+
+        {/* Monster */}
+        <MonsterDisplay
+          growthRate={growthRate}
+          isLastDay={isLastDay}
+          finalSavings={finalSavings}
+        />
 
         {/* HP / Today's Budget */}
         <section className="border border-[#1a1a2e] rounded-xl p-5 bg-[#0a0a16] space-y-4">
@@ -137,18 +151,6 @@ function App() {
               </div>
             </div>
             <div className="text-xs text-[#3a3a5a] mt-1.5">明日からの1日予算</div>
-          </section>
-        )}
-
-        {/* Last Day Banner */}
-        {isLastDay && (
-          <section
-            className="border border-[#ffcc00]/30 rounded-xl p-4 bg-[#0a0a16] text-center"
-          >
-            <div className="text-[#ffcc00] font-bold tracking-widest">🏆 最終日！</div>
-            <div className="text-xs text-[#5050a0] mt-1.5">
-              月末残高: {fmt(totalBudget - totalSpentNow)}
-            </div>
           </section>
         )}
 
