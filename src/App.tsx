@@ -33,7 +33,6 @@ function App() {
     totalSpentNow,
     addExpense,
     removeExpense,
-    updateExpenseMemo,
     updateSettings,
     resetAll,
   } = useBudget();
@@ -64,7 +63,6 @@ function App() {
           currentMonth={currentMonth}
           totalBudget={totalBudget}
           expenses={expenses}
-          onUpdateMemo={updateExpenseMemo}
           onClose={() => setShowCalendar(false)}
         />
       )}

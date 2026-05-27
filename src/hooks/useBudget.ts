@@ -86,12 +86,6 @@ export function useBudget() {
     setState((s) => ({ ...s, expenses: s.expenses.filter((e) => e.id !== id) }));
   };
 
-  const updateExpenseMemo = (id: string, memo: string) => {
-    setState((s) => ({
-      ...s,
-      expenses: s.expenses.map((e) => (e.id === id ? { ...e, memo } : e)),
-    }));
-  };
 
 
   const updateSettings = (budget: number) => {
@@ -118,7 +112,6 @@ export function useBudget() {
     totalSpentNow,
     addExpense,
     removeExpense,
-    updateExpenseMemo,
     updateSettings,
     resetAll,
   };
