@@ -1,19 +1,28 @@
 import { useState } from 'react';
 import { useBudget } from './hooks/useBudget';
 import SettingsPanel from './components/SettingsPanel';
+import CalendarModal from './components/CalendarModal';
 import MonsterDisplay from './components/MonsterDisplay';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
+
+const MONTH_NAMES = ['1月','2月','3月','4月','5月','6月',
+                     '7月','8月','9月','10月','11月','12月'];
 
 const fmt = (amount: number) =>
   `¥${Math.floor(Math.abs(amount)).toLocaleString('ja-JP')}`;
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
+  const [showCalendar, setShowCalendar]  = useState(false);
   const {
     totalBudget,
     totalDays,
+    currentYear,
+    currentMonth,
     currentDay,
+    todayStr,
+    expenses,
     todayExpenses,
     todayBudget,
     todaySpent,
@@ -24,17 +33,16 @@ function App() {
     totalSpentNow,
     addExpense,
     removeExpense,
-    advanceDay,
+    updateExpenseMemo,
     updateSettings,
     resetAll,
   } = useBudget();
 
   const isOverBudget = todayRemaining < 0;
-  const isLastDay = currentDay >= totalDays;
+  const isLastDay    = currentDay >= totalDays;
+
   const baseDailyBudget = totalBudget / totalDays;
-  const growthRate = isLastDay
-    ? 0
-    : ((tomorrowBudget - baseDailyBudget) / baseDailyBudget) * 100;
+  const growthRate  = isLastDay ? 0 : ((tomorrowBudget - baseDailyBudget) / baseDailyBudget) * 100;
   const finalSavings = totalBudget - totalSpentNow;
 
   const hpPercent = todayBudget > 0
@@ -42,19 +50,30 @@ function App() {
     : 0;
 
   const hpBarClass =
-    isOverBudget ? 'hp-bar-danger' :
+    isOverBudget  ? 'hp-bar-danger' :
     hpPercent > 50 ? 'hp-bar-green' :
     hpPercent > 25 ? 'hp-bar-yellow' :
-    'hp-bar-red';
+                     'hp-bar-red';
 
   return (
     <div className="min-h-screen bg-[#080810] text-[#c0c0e0] font-mono">
+      {showCalendar && (
+        <CalendarModal
+          todayStr={todayStr}
+          currentYear={currentYear}
+          currentMonth={currentMonth}
+          totalBudget={totalBudget}
+          expenses={expenses}
+          onUpdateMemo={updateExpenseMemo}
+          onClose={() => setShowCalendar(false)}
+        />
+      )}
+
       {showSettings && (
         <SettingsPanel
           totalBudget={totalBudget}
-          totalDays={totalDays}
-          currentDay={currentDay}
-          onSave={(b, d) => { updateSettings(b, d); setShowSettings(false); }}
+          todayStr={todayStr}
+          onSave={(b) => { updateSettings(b); setShowSettings(false); }}
           onClose={() => setShowSettings(false)}
           onReset={() => { resetAll(); setShowSettings(false); }}
         />
@@ -69,17 +88,20 @@ function App() {
           </span>
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#3a3a5a]">
-              Day {currentDay} / {totalDays}
+              {MONTH_NAMES[currentMonth]} {currentDay}/{totalDays}日
             </span>
-            {!isLastDay && (
-              <button
-                onClick={advanceDay}
-                title="翌日へ進む（テスト用）"
-                className="text-xs px-2 py-1 border border-[#1a1a2e] rounded text-[#3a3a5a] hover:border-[#00ff88]/50 hover:text-[#00ff88] transition-colors"
-              >
-                翌日→
-              </button>
-            )}
+            <button
+              onClick={() => setShowCalendar(true)}
+              title="カレンダーを開く"
+              className="px-2 py-1 border border-[#1a1a2e] rounded text-[#3a3a5a] hover:border-[#00d4ff]/50 hover:text-[#00d4ff] transition-colors"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </button>
             <button
               onClick={() => setShowSettings(true)}
               className="text-xs px-2 py-1 border border-[#1a1a2e] rounded text-[#3a3a5a] hover:border-[#00d4ff]/50 hover:text-[#00d4ff] transition-colors"
@@ -109,7 +131,6 @@ function App() {
             {fmt(todayRemaining)}
           </div>
 
-          {/* HP Bar */}
           <div>
             <div className="h-5 bg-[#0c0c18] rounded-full overflow-hidden border border-[#1a1a2e]">
               <div
@@ -138,14 +159,10 @@ function App() {
                 {fmt(tomorrowBudget)}
               </span>
               <div className="flex items-baseline gap-1.5">
-                <span
-                  className={`text-xl font-bold ${buff >= 0 ? 'text-[#00ff88]' : 'text-[#ff3366]'}`}
-                >
+                <span className={`text-xl font-bold ${buff >= 0 ? 'text-[#00ff88]' : 'text-[#ff3366]'}`}>
                   {buff >= 0 ? '+' : '-'}{fmt(buff)}
                 </span>
-                <span
-                  className={`text-xs ${buff >= 0 ? 'text-[#00ff88]/60' : 'text-[#ff3366]/60'}`}
-                >
+                <span className={`text-xs ${buff >= 0 ? 'text-[#00ff88]/60' : 'text-[#ff3366]/60'}`}>
                   ({buff >= 0 ? '+' : ''}{buffPercent.toFixed(1)}%)
                 </span>
               </div>
@@ -165,7 +182,6 @@ function App() {
           todayBudget={todayBudget}
         />
 
-        {/* Footer */}
         <div className="text-center text-[#1a1a2e] text-xs pb-2">
           BUDGET RPG v1.0 — データはブラウザに保存されます
         </div>

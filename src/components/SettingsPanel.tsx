@@ -2,36 +2,22 @@ import { useState } from 'react';
 
 interface Props {
   totalBudget: number;
-  totalDays: number;
-  currentDay: number;
-  onSave: (budget: number, days: number) => void;
+  todayStr: string;
+  onSave: (budget: number) => void;
   onClose: () => void;
   onReset: () => void;
 }
 
-export default function SettingsPanel({
-  totalBudget,
-  totalDays,
-  currentDay,
-  onSave,
-  onClose,
-  onReset,
-}: Props) {
+export default function SettingsPanel({ totalBudget, todayStr, onSave, onClose, onReset }: Props) {
   const [budget, setBudget] = useState(totalBudget.toString());
-  const [days, setDays] = useState(totalDays.toString());
 
   const handleSave = () => {
     const b = parseInt(budget, 10);
-    const d = parseInt(days, 10);
-    if (!isNaN(b) && !isNaN(d) && b > 0 && d > 0) {
-      onSave(b, d);
-    }
+    if (!isNaN(b) && b > 0) onSave(b);
   };
 
   const handleReset = () => {
-    if (window.confirm('全データをリセットしますか？この操作は元に戻せません。')) {
-      onReset();
-    }
+    if (window.confirm('全データをリセットしますか？この操作は元に戻せません。')) onReset();
   };
 
   return (
@@ -44,39 +30,26 @@ export default function SettingsPanel({
         className="bg-[#0e0e1a] border border-[#2a2a4a] rounded-xl p-6 w-full max-w-sm space-y-5"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-[#00d4ff] font-bold tracking-widest text-sm">
-          ⚙ SETTINGS
-        </div>
+        <div className="text-[#00d4ff] font-bold tracking-widest text-sm">⚙ SETTINGS</div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs text-[#5050a0] block mb-1.5 tracking-widest uppercase">
-              今月の総予算 (¥)
-            </label>
-            <input
-              type="number"
-              value={budget}
-              onChange={(e) => setBudget(e.target.value)}
-              min="1"
-              className="w-full bg-[#080810] border border-[#2a2a4a] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#00d4ff] transition-colors"
-            />
-          </div>
-          <div>
-            <label className="text-xs text-[#5050a0] block mb-1.5 tracking-widest uppercase">
-              今月の総日数
-            </label>
-            <input
-              type="number"
-              value={days}
-              onChange={(e) => setDays(e.target.value)}
-              min="1"
-              className="w-full bg-[#080810] border border-[#2a2a4a] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#00d4ff] transition-colors"
-            />
-          </div>
+        <div>
+          <label className="text-xs text-[#5050a0] block mb-1.5 tracking-widest uppercase">
+            今月の予算 (¥)
+          </label>
+          <input
+            type="number"
+            value={budget}
+            onChange={(e) => setBudget(e.target.value)}
+            min="1"
+            className="w-full bg-[#080810] border border-[#2a2a4a] rounded-lg px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#00d4ff] transition-colors"
+          />
+          <p className="text-[10px] text-[#3a3a5a] mt-1.5">
+            日数はカレンダーに自動で合わせます
+          </p>
         </div>
 
         <div className="text-xs text-[#3a3a5a] border-t border-[#1a1a2e] pt-3">
-          現在: Day {currentDay} / {totalDays}
+          現在: {todayStr}
         </div>
 
         <div className="flex gap-2">

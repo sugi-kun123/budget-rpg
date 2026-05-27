@@ -1,6 +1,6 @@
 export interface Expense {
   id: string;
-  day: number;
+  date: string;   // "YYYY-MM-DD"
   amount: number;
   memo: string;
   timestamp: number;
@@ -8,7 +8,5 @@ export interface Expense {
 
 export interface BudgetState {
   totalBudget: number;
-  totalDays: number;
-  currentDay: number;
   expenses: Expense[];
 }

@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import type { BudgetState, Expense } from '../types';
 
-const STORAGE_KEY = 'budget-rpg-v1';
+const STORAGE_KEY = 'budget-rpg-v2';
 
 const DEFAULT_STATE: BudgetState = {
   totalBudget: 30000,
-  totalDays: 30,
-  currentDay: 1,
   expenses: [],
 };
 
@@ -20,6 +18,19 @@ function loadState(): BudgetState {
   return DEFAULT_STATE;
 }
 
+export const daysInMonth = (year: number, month: number): number =>
+  new Date(year, month + 1, 0).getDate();
+
+export const toDateStr = (d: Date): string => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
+
+export const monthPrefix = (year: number, month: number): string =>
+  `${year}-${String(month + 1).padStart(2, '0')}`;
+
 export function useBudget() {
   const [state, setState] = useState<BudgetState>(loadState);
 
@@ -27,22 +38,29 @@ export function useBudget() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const { totalBudget, totalDays, currentDay, expenses } = state;
+  const { totalBudget, expenses } = state;
 
-  // Sum of expenses from days before today
+  const today = new Date();
+  const todayStr = toDateStr(today);
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();   // 0-indexed
+  const currentDay = today.getDate();
+  const totalDays = daysInMonth(currentYear, currentMonth);
+
+  const prefix = monthPrefix(currentYear, currentMonth);
+
+  // Expenses in this month logged before today
   const totalSpentBefore = expenses
-    .filter((e) => e.day < currentDay)
+    .filter((e) => e.date.startsWith(prefix) && e.date < todayStr)
     .reduce((sum, e) => sum + e.amount, 0);
 
-  const todayExpenses = expenses.filter((e) => e.day === currentDay);
+  const todayExpenses = expenses.filter((e) => e.date === todayStr);
   const todaySpent = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
 
-  // Today's budget is calculated once at the start of the day (before today's spending)
   const remainingDaysIncludingToday = Math.max(1, totalDays - currentDay + 1);
   const todayBudget = (totalBudget - totalSpentBefore) / remainingDaysIncludingToday;
   const todayRemaining = todayBudget - todaySpent;
 
-  // Tomorrow's budget if no more spending happens today
   const totalSpentNow = totalSpentBefore + todaySpent;
   const remainingDaysExcludingToday = totalDays - currentDay;
   const tomorrowBudget =
@@ -56,7 +74,7 @@ export function useBudget() {
   const addExpense = (amount: number, memo: string) => {
     const expense: Expense = {
       id: crypto.randomUUID(),
-      day: currentDay,
+      date: todayStr,
       amount,
       memo: memo || '（メモなし）',
       timestamp: Date.now(),
@@ -68,15 +86,16 @@ export function useBudget() {
     setState((s) => ({ ...s, expenses: s.expenses.filter((e) => e.id !== id) }));
   };
 
-  const advanceDay = () => {
+  const updateExpenseMemo = (id: string, memo: string) => {
     setState((s) => ({
       ...s,
-      currentDay: Math.min(s.currentDay + 1, s.totalDays),
+      expenses: s.expenses.map((e) => (e.id === id ? { ...e, memo } : e)),
     }));
   };
 
-  const updateSettings = (budget: number, days: number) => {
-    setState((s) => ({ ...s, totalBudget: budget, totalDays: days }));
+
+  const updateSettings = (budget: number) => {
+    setState((s) => ({ ...s, totalBudget: budget }));
   };
 
   const resetAll = () => setState(DEFAULT_STATE);
@@ -84,7 +103,11 @@ export function useBudget() {
   return {
     totalBudget,
     totalDays,
+    currentYear,
+    currentMonth,
     currentDay,
+    todayStr,
+    expenses,
     todayExpenses,
     todayBudget,
     todaySpent,
@@ -95,7 +118,7 @@ export function useBudget() {
     totalSpentNow,
     addExpense,
     removeExpense,
-    advanceDay,
+    updateExpenseMemo,
     updateSettings,
     resetAll,
   };
