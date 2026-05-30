@@ -31,8 +31,10 @@ function App() {
     buff,
     buffPercent,
     totalSpentNow,
+    notes,
     addExpense,
     removeExpense,
+    updateDayNote,
     updateSettings,
     resetAll,
   } = useBudget();
@@ -63,6 +65,8 @@ function App() {
           currentMonth={currentMonth}
           totalBudget={totalBudget}
           expenses={expenses}
+          notes={notes}
+          onUpdateNote={updateDayNote}
           onClose={() => setShowCalendar(false)}
         />
       )}
@@ -179,6 +183,19 @@ function App() {
           todaySpent={todaySpent}
           todayBudget={todayBudget}
         />
+
+        {/* Today's Note */}
+        <section className="border border-[#1a1a2e] rounded-xl p-4 bg-[#0a0a16] space-y-2">
+          <div className="text-xs text-[#3a3a5a] tracking-widest uppercase">📝 memo</div>
+          <textarea
+            key={todayStr}
+            defaultValue={notes[todayStr] ?? ''}
+            onBlur={(e) => updateDayNote(todayStr, e.target.value)}
+            rows={3}
+            placeholder="メモを入力..."
+            className="w-full bg-[#080810] border border-[#1a1a2e] rounded-lg px-3 py-2 text-sm text-[#c0c0e0] placeholder-[#2a2a4a] focus:outline-none focus:border-[#5050a0] transition-colors resize-none"
+          />
+        </section>
 
         <div className="text-center text-[#1a1a2e] text-xs pb-2">
           BUDGET RPG v1.0 — データはブラウザに保存されます

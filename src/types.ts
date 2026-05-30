@@ -9,4 +9,5 @@ export interface Expense {
 export interface BudgetState {
   totalBudget: number;
   expenses: Expense[];
+  notes: Record<string, string>; // "YYYY-MM-DD" → note text
 }

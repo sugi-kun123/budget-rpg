@@ -8,6 +8,8 @@ interface Props {
   currentMonth: number;
   totalBudget: number;
   expenses: Expense[];
+  notes: Record<string, string>;
+  onUpdateNote: (date: string, note: string) => void;
   onClose: () => void;
 }
 
@@ -38,6 +40,8 @@ export default function CalendarModal({
   currentMonth,
   totalBudget,
   expenses,
+  notes,
+  onUpdateNote,
   onClose,
 }: Props) {
   const [viewYear, setViewYear]     = useState(currentYear);
@@ -195,7 +199,7 @@ export default function CalendarModal({
             </div>
 
             {isFuture ? (
-              <div className="text-center py-5 space-y-1.5">
+              <div className="text-center py-3 space-y-1.5">
                 <div className="text-3xl font-bold tabular-nums"
                   style={{ color: '#00d4ff', textShadow: '0 0 12px rgba(0,212,255,0.4)' }}>
                   {fmt(projectedPerDay)}
@@ -205,9 +209,8 @@ export default function CalendarModal({
                 </div>
               </div>
             ) : selExpenses.length === 0 ? (
-              <div className="text-center text-[#2a2a4a] text-xs py-5">支出なし</div>
+              <div className="text-center text-[#2a2a4a] text-xs py-3">支出なし</div>
             ) : (
-              /* 過去・今日: 読み取り専用リスト */
               <ul className="space-y-1.5">
                 {selExpenses.map((e) => (
                   <li key={e.id} className="flex items-baseline justify-between gap-2 text-xs">
@@ -217,6 +220,19 @@ export default function CalendarModal({
                 ))}
               </ul>
             )}
+
+            {/* Notes — always editable */}
+            <div className="space-y-1.5">
+              <div className="text-[10px] text-[#3a3a5a] tracking-widest uppercase">memo</div>
+              <textarea
+                key={selectedDate}
+                defaultValue={notes[selectedDate] ?? ''}
+                onBlur={(e) => onUpdateNote(selectedDate, e.target.value)}
+                rows={3}
+                placeholder="メモを入力..."
+                className="w-full bg-[#080810] border border-[#1a1a2e] rounded-lg px-3 py-2 text-xs text-[#c0c0e0] placeholder-[#2a2a4a] focus:outline-none focus:border-[#5050a0] transition-colors resize-none"
+              />
+            </div>
           </div>
 
         </div>

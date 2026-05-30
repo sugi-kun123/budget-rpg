@@ -6,6 +6,7 @@ const STORAGE_KEY = 'budget-rpg-v2';
 const DEFAULT_STATE: BudgetState = {
   totalBudget: 30000,
   expenses: [],
+  notes: {},
 };
 
 function loadState(): BudgetState {
@@ -38,7 +39,7 @@ export function useBudget() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }, [state]);
 
-  const { totalBudget, expenses } = state;
+  const { totalBudget, expenses, notes } = state;
 
   const today = new Date();
   const todayStr = toDateStr(today);
@@ -88,6 +89,10 @@ export function useBudget() {
 
 
 
+  const updateDayNote = (date: string, note: string) => {
+    setState((s) => ({ ...s, notes: { ...s.notes, [date]: note } }));
+  };
+
   const updateSettings = (budget: number) => {
     setState((s) => ({ ...s, totalBudget: budget }));
   };
@@ -110,8 +115,10 @@ export function useBudget() {
     buff,
     buffPercent,
     totalSpentNow,
+    notes,
     addExpense,
     removeExpense,
+    updateDayNote,
     updateSettings,
     resetAll,
   };
